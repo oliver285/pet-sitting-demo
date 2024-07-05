@@ -1,0 +1,52 @@
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
+      <a class="navbar-brand" href="/"></a>
+      <ul class="navbar-nav mr-auto">
+
+        <img src = "/img/logo-1.png" alt="logo" height = "40px">
+
+        <li class="nav-item">
+          <!-- TODO: For 'Home', Add a <a> tag with class="nav-link" and href='/' API that navigates to home page if logged in, or login page if not -->
+            {{#if email}}
+                <a class="nav-link" href="/">
+            {{else}}
+                <a class="nav-link" href="/login">
+            {{/if}}
+            Home</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="navbar-collapse collapse order-3 dual-collapse2">
+      <ul class="navbar-nav ml-auto">
+        {{#if email}}
+          <li class="nav-item">
+              <a class="nav-link" href="/logout"> Logout</a>
+          </li>
+          <li class = "nav-item">
+              <a class = "nav-link " href = "/profile"> Profile</a>
+          </li>
+          <li class = "nav-item">
+              <a class = "nav-link " href = "/jobs"> Jobs</a>
+          </li>
+          <li class = "nav-item">
+              <a class = "nav-link " href = "/manage-job"> Manage Jobs</a>
+          </li>
+          {{else}}
+          <li class="nav-item">
+              <a class="nav-link" href="/login"> Login</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="/register"> Register</a>
+          </li>
+          {{/if}}
+          <li class="nav-item">
+              <a class="nav-link" href="#">
+              {{email}}
+              </a>
+          </li>
+      </ul>
+    </div>
+  </nav>
+</header>
