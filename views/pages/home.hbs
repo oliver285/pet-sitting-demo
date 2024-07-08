@@ -1,19 +1,33 @@
-<div class="container">
-    <h1>Welcome!</h1>
-    <div class="container">
-        <table class="table">
-            <tr>
-                <td>FIRST NAME</td>
-                <td>{{first_name}}</td>
-            </tr>
-            <tr>
-                <td>LAST NAME</td>
-                <td>{{last_name}}</td>
-            </tr>
-            <tr>
-                <td>EMAIL ADDRESS</td>
-                <td>{{email}}</td>
-            </tr>
-        </table>
+<header>
+  <div class="logo">Logo</div>
+  <div class="auth-buttons">
+    <a href="/register">Register</a>
+    <a href="/login">Login</a>
+  </div>
+</header>
+
+<section class="hero">
+  <img src="/path/to/dogs-by-river.jpg" alt="Two dogs by a river" style="width: 100%;">
+</section>
+
+<section class="content">
+  <div class="about-us">
+    <h2>Boulder Pet Sitters</h2>
+    <p>Meet Boulder's finest professional pet sitters. We vet all our freelancers, ensuring you get the best services and care that your pets truly deserve.</p>
+    <button>Meet our pet sitters!</button>
+  </div>
+
+  <div class="testimonials">
+    <h3>Meet our satisfied customers</h3>
+    <div class="testimonial-grid">
+      {{#each testimonials}}
+        <div class="testimonial">
+          <p class="quote">"Quote"</p>
+          <img src="{{this.image}}" alt="{{this.name}}" class="customer-image">
+          <p class="name">{{this.name}}</p>
+          <p class="description">{{this.description}}</p>
+        </div>
+      {{/each}}
     </div>
-</div>
+  </div>
+</section>
