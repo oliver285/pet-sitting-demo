@@ -13,7 +13,7 @@ services:
     ports:
       - 3000
 
-  - type: service
+  - type: pserv
     name: db
     dockerfilePath: ./Dockerfile.db
     envVars:
