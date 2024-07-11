@@ -37,18 +37,6 @@ services:
       mountPath: /var/lib/postgresql/data
       sizeGB: 10
 
-  # Testing service using Dockerfile.test
-  - type: worker
-    name: test
-    runtime: docker
-    repo: https://github.com/bhargavns/pet-sitting-demo.git
-    dockerfilePath: Dockerfile.test
-    branch: main
-    startCommand: npm test
-    envVars:
-      - key: NODE_ENV
-        value: test
-
 # List of PostgreSQL databases
 databases:
   - name: db
