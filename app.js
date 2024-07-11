@@ -8,7 +8,7 @@ app.use(express.static("public"));
 const handlebars = require("express-handlebars");
 const pgp = require("pg-promise")();
 const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 const session = require("express-session");
 
@@ -312,10 +312,12 @@ app.get('/edit-profile', isLoggedIn, async (req, res) => {
     }
   });
   
-  
+ 
 
 // -------------------------------------  SERVER START   ---------------------------------------
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
+
+module.exports = {app, db};

@@ -4,17 +4,25 @@
     "description": "Node.js on Docker with PostgreSQL",
     "main": "app.js",
     "dependencies": {
-        "bcrypt": "^5.1.1",
+        "axios": "^1.1.3",
+        "bcryptjs": "^2.4.3",
         "body-parser": "1.20.0",
         "express": "^4.6.1",
         "express-handlebars": "^7.1.2",
         "express-session": "1.17.3",
         "jsonwebtoken": "^9.0.2",
-        "nodemon": "3.1.0",
         "pg-promise": "^10.11.1"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "nodemon": "3.1.0",
+        "npm-run-all": "^4.1.5",
+        "supertest": "^7.0.0"
     },
     "scripts": {
         "prestart": "npm install",
-        "start": "nodemon app.js"
+        "start": "nodemon app.js",
+        "test": "jest",
+        "testandrun": "npm run prestart && npm run test && npm start"
     }
 }

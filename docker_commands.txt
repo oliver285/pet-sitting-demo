@@ -1,0 +1,24 @@
+
+docker build -t web -f Dockerfile.web .
+docker build -t db -f Dockerfile.db .
+
+
+docker network create my_network
+
+docker run -d \
+  --name db \
+  --network my_network \
+  --env-file .env \
+  -e POSTGRES_DB=petsitting \
+  -v full_demo:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  db
+
+docker run -d \
+  --name web \
+  --network my_network \
+  --link db:db \
+  --env-file .env \
+  -v "$(pwd):/home/node/app" \
+  -p 3000:3000 \
+  web
