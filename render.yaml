@@ -6,8 +6,6 @@ services:
     repo: https://github.com/bhargavns/pet-sitting-demo.git
     dockerfilePath: Dockerfile.web
     branch: main
-    buildCommand: npm run prestart
-    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -55,5 +53,5 @@ services:
 databases:
   - name: db
     databaseName: db
-    user: postgres
+    user: postgres_user
 
