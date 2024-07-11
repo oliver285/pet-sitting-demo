@@ -1,7 +1,7 @@
 # render.yaml
 services:
   - type: web
-    name: web-service
+    name: web
     env: node
     buildCommand: "npm install"
     startCommand: "npm run start"
@@ -13,8 +13,8 @@ services:
     ports:
       - 3000
 
-  - type: private
-    name: db-service
+  - type: service
+    name: db
     dockerfilePath: ./Dockerfile.db
     envVars:
       - key: POSTGRES_USER
@@ -26,14 +26,6 @@ services:
     volumes:
       - path: /var/lib/postgresql/data
         name: full_demo
-
-  - type: cron
-    name: test-service
-    cronJob:
-      schedule: "@daily"
-      command: "npm run test"
-    dockerfilePath: ./Dockerfile.test
-    envVars:
       - key: NODE_ENV
         value: test
     envFile: .env
