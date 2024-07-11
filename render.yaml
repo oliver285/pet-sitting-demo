@@ -1,55 +1,59 @@
 services:
+  # Web service using Dockerfile.web
   - type: web
-    plan: free
     name: web
-    runtime: node
-    buildCommand: "npm install"
-    startCommand: "npm run start"
-    dockerfilePath: ./Dockerfile.web
+    runtime: docker
+    repo: https://github.com/bhargavns/pet-sitting-demo.git
+    dockerfilePath: Dockerfile.web
+    branch: main
+    buildCommand: npm run prestart
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
-        value: development
+        value: production
       - key: DATABASE_URL
         fromDatabase:
           name: db
           property: connectionString
-    envFile: .env
-    ports:
-      - 3000
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetCPUPercent: 60
 
-databases:
-  - name: db
-    plan: free
+  # Database service using Dockerfile.db
+  - type: pserv
+    name: db
+    runtime: docker
+    repo: https://github.com/bhargavns/pet-sitting-demo.git
+    dockerfilePath: Dockerfile.db
+    branch: main
     envVars:
       - key: POSTGRES_USER
-        fromFile: .env
+        value: postgres
       - key: POSTGRES_PASSWORD
-        fromFile: .env
+        value: pwd
       - key: POSTGRES_DB
-        fromFile: .env
-    volumes:
-      - path: /var/lib/postgresql/data
-        name: full_demo
+        value: db
+    disk:
+      name: data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
 
-envVars:
-  # Generates a base64-encoded 256-bit value
-  # (unless a value already exists)
-  - key: SESSION_SECRET
-    generateValue: true
+  # Testing service using Dockerfile.test
+  - type: worker
+    name: test
+    runtime: docker
+    repo: https://github.com/bhargavns/pet-sitting-demo.git
+    dockerfilePath: Dockerfile.test
+    branch: main
+    startCommand: npm test
+    envVars:
+      - key: NODE_ENV
+        value: test
 
-  - key: POSTGRES_PASSWORD
-    value: pwd
-
-  - key: POSTGRES_DB
-    value: petsitting
-
-  - key: POSTGRES_USER
-    value: postgres
-
-  # References a property of a database
-  # (see available properties below)
-  - key: DATABASE_URL
-    fromDatabase:
-      name: db
-      property: connectionString
+# List of PostgreSQL databases
+databases:
+  - name: db
+    databaseName: db
+    user: postgres
 
