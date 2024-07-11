@@ -1,21 +1,25 @@
-# render.yaml
 services:
   - type: web
+    plan: free
     name: web
-    env: node
+    runtime: node
     buildCommand: "npm install"
     startCommand: "npm run start"
     dockerfilePath: ./Dockerfile.web
     envVars:
       - key: NODE_ENV
         value: development
+      - key: DATABASE_URL
+        fromDatabase:
+          name: db
+          property: connectionString
     envFile: .env
     ports:
       - 3000
 
-  - type: pserv
-    name: db
-    dockerfilePath: ./Dockerfile.db
+databases:
+  - name: db
+    plan: free
     envVars:
       - key: POSTGRES_USER
         fromFile: .env
@@ -26,7 +30,3 @@ services:
     volumes:
       - path: /var/lib/postgresql/data
         name: full_demo
-      - key: NODE_ENV
-        value: test
-    envFile: .env
-
