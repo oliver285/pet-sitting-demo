@@ -30,3 +30,26 @@ databases:
     volumes:
       - path: /var/lib/postgresql/data
         name: full_demo
+
+envVars:
+  # Generates a base64-encoded 256-bit value
+  # (unless a value already exists)
+  - key: SESSION_SECRET
+    generateValue: true
+
+  - key: POSTGRES_PASSWORD
+    value: pwd
+
+  - key: POSTGRES_DB
+    value: petsitting
+
+  - key: POSTGRES_USER
+    value: postgres
+
+  # References a property of a database
+  # (see available properties below)
+  - key: DATABASE_URL
+    fromDatabase:
+      name: db
+      property: connectionString
+
