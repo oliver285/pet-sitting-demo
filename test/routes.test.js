@@ -29,7 +29,7 @@ describe('Auth and Profile Routes', () => {
 
     await db.none(`
       INSERT INTO freelancer (user_id, bio, profile_picture)
-      VALUES ($1, "some bio", "example.jpg")
+      VALUES ($1, 'some bio', 'example.jpg')
     `, [testUserId2]);
   });
 
@@ -151,6 +151,37 @@ describe('Auth and Profile Routes', () => {
     });
   });
 
+  describe('POST /edit-profile', () => {
+    it('should change the profile for a logged-in employer', async () => {
+      const agent = request.agent(app);
+  
+      await agent
+        .post('/login')
+        .send({
+          email: 'test@example.com',
+          password: 'testpassword'
+        });
+      
+      const response = await agent
+        .post('/edit-profile')
+        .send({
+          name: 'Updated Name',
+          location: 'Updated Location',
+          budget: 500
+        });
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Profile updated successfully' });
+  
+      const updatedUser = await db.one('SELECT * FROM app_user WHERE email = $1', ['test@example.com']);
+      const updatedEmployer = await db.one('SELECT * FROM employer WHERE user_id = $1', [updatedUser.id]);
+  
+      expect(updatedUser.name).toBe('Updated Name');
+      expect(updatedUser.location).toBe('Updated Location');
+      expect(updatedEmployer.budget).toBe(500);
+    });
+  });
+
   describe('GET /jobs', () => {
     beforeAll(async () => {
       // Create a test job post
@@ -188,15 +219,5 @@ describe('Auth and Profile Routes', () => {
       expect(response.text).toContain('Test Description');
       expect(response.text).toContain('TestPet');
     });
-
-    describe("GET /pets", async () => {
-        // WRITE LOGIC TO ENSURE THAT THE PETS PAGE EXISTS
-        const agent = request.agent(app);
-      
-        // Login first
-        const response = await agent.get('/pets');
-
-        expect(response.status).toBe(200);
-    })
   });
 });
