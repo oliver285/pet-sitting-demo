@@ -18,6 +18,11 @@ const hbs = handlebars.create({
   extname: "hbs",
   layoutsDir: __dirname + "/views/layouts",
   partialsDir: __dirname + "/views/partials",
+  helpers: {
+    ifEquals: function (arg1, arg2, options) {
+      return arg1 == arg2 ? options.fn(this) : options.inverse(this);
+    },
+  },
 });
 
 // Register `hbs` as our view engine using its bound `engine()` function.
@@ -38,7 +43,6 @@ app.use(
     extended: true,
   })
 );
-
 
 // -------------------------------------  DB CONFIG AND CONNECT   ---------------------------------------
 const dbConfig = {
@@ -67,14 +71,13 @@ db.connect()
   });
 
 // db check if table exists
-// db.query("SELECT * FROM job_post")
-//   .then((result) => {
-//     console.log("Table exists");
-//     console.log(result);
-//   })
-//   .catch((error) => {
-//     console.error("Table does not exist:", error);
-//   });
+db.query("SELECT * FROM job_post")
+  .then((result) => {
+    console.log("Table exists");
+  })
+  .catch((error) => {
+    console.error("Table does not exist:", error);
+  });
 
 // -------------------------------------  ROUTES   ---------------------------------------
 
@@ -92,36 +95,36 @@ app.get("/login", (req, res) => {
 
 // -------------------------------------  REGISTER   ---------------------------------------
 
-app.post('/register', async (req, res) => {
-    const { name, email, password, location } = req.body;
-    const type = req.query.type;
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = await db.one(
-        `INSERT INTO app_user (name, email, password_hash, type, location)
-         VALUES ($1, $2, $3, $4, $5) RETURNING *`, 
-        [name, email, hashedPassword, type, location]
-      );
+app.post("/register", async (req, res) => {
+  const { name, email, password, location } = req.body;
+  const type = req.query.type;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await db.one(
+      `INSERT INTO app_user (name, email, password_hash, type, location)
+         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [name, email, hashedPassword, type, location]
+    );
 
-      if(type === "employer"){
-        await db.none(
-            `INSERT INTO employer (user_id, budget)
+    if (type === "employer") {
+      await db.none(
+        `INSERT INTO employer (user_id, budget)
             VALUES ($1, $2)`,
-            [newUser.id, 0]
-            );
-        }
-    
-      if(type === "freelancer"){
-        await db.none(
-            `INSERT INTO freelancer (user_id, bio, profile_picture)
-            VALUES ($1, $2, $3)`,
-            [newUser.id, 'new freelancer', 'default.jpg']
-        );
-      }
+        [newUser.id, 0]
+      );
+    }
 
-      req.session.userId = newUser.id;
-      req.session.userType = type;
-      res.send(`
+    if (type === "freelancer") {
+      await db.none(
+        `INSERT INTO freelancer (user_id, bio, profile_picture)
+            VALUES ($1, $2, $3)`,
+        [newUser.id, "new freelancer", "default.jpg"]
+      );
+    }
+
+    req.session.userId = newUser.id;
+    req.session.userType = type;
+    res.send(`
                 <script>
                     alert('Registration successful');
                     setTimeout(function() {
@@ -129,47 +132,49 @@ app.post('/register', async (req, res) => {
                     }, 1000);
                 </script>
         `);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send('Error in user registration');
-    }
-  });  
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error in user registration");
+  }
+});
 
 // -------------------------------------  LOGIN   ---------------------------------------
 
 const secretKey = process.env.SESSION_SECRET;
 
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    try {
-      const user = await db.oneOrNone('SELECT * FROM app_user WHERE email = $1', [email]);
-      if (user && await bcrypt.compare(password, user.password_hash)) {
-        req.session.userId = user.id; // Set user ID in session
-        req.session.userType = user.type; // Set user type in session
-        req.session.email = user.email; // Set user email in session
-        if (user.type === 'freelancer') {
-          res.redirect('/jobs');
-        }
-        if (user.type === 'employer') {
-          res.redirect('/edit-profile');
-        }
-      } else {
-        res.status(401).send('Invalid credentials');
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await db.oneOrNone("SELECT * FROM app_user WHERE email = $1", [
+      email,
+    ]);
+    if (user && (await bcrypt.compare(password, user.password_hash))) {
+      req.session.userId = user.id; // Set user ID in session
+      req.session.userType = user.type; // Set user type in session
+      req.session.email = user.email; // Set user email in session
+      if (user.type === "freelancer") {
+        res.redirect("/jobs");
       }
-    } catch (error) {
-      console.log(error);
-      res.status(500).send('Error logging in');
+      if (user.type === "employer") {
+        res.redirect("/edit-profile");
+      }
+    } else {
+      res.status(401).send("Invalid credentials");
     }
-  });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error logging in");
+  }
+});
 
-  // -------------------------------------  LOGOUT   ---------------------------------------
+// -------------------------------------  LOGOUT   ---------------------------------------
 
-  app.get('/logout', (req, res) => {
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(400).send('Unable to log out')
-      }
-      res.send(`
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(400).send("Unable to log out");
+    }
+    res.send(`
                 <script>
                     alert('Logout successful');
                     setTimeout(function() {
@@ -177,32 +182,22 @@ app.post('/login', async (req, res) => {
                     }, 1000);
                 </script>
         `);
-    });
   });
-  
+});
 
 // -------------------------------------  Auth Middleware   ---------------------------------------
 
 // Middleware to check if the user is logged in
 function isLoggedIn(req, res, next) {
-    if (!req.session.userId) {
-      return res.status(401).send('You are not logged in');
-    }
-    next();
+  if (!req.session.userId) {
+    return res.status(401).send("You are not logged in");
   }
-  
-  // Dashboard Route
-  app.get('/dashboard', isLoggedIn, (req, res) => {
-    if (req.session.userType === 'freelancer') {
-      res.send('Freelancer Dashboard');
-    } else if (req.session.userType === 'employer') {
-      res.send('Employer Profile');
-    }
-  });
+  next();
+}
 
 // -------------------------------------  JOB LISTING   ---------------------------------------
 
-app.get("/jobs", async (req, res) => {
+app.get("/jobs", isLoggedIn, async (req, res) => {
   try {
     const query = `
                 SELECT 
@@ -234,7 +229,7 @@ app.get("/jobs", async (req, res) => {
     const jobs = await db.any(query);
 
     // Render the job board template with the jobs data
-    res.render("pages/job_listing", { jobs, email: req.session.email});
+    res.render("pages/job_listing", { jobs, email: req.session.email });
   } catch (err) {
     console.error("Error fetching job posts:", err);
     res.status(500).send("Server error");
@@ -243,76 +238,129 @@ app.get("/jobs", async (req, res) => {
 
 // -------------------------------------  PROFILE EDIT - EMPLOYERS   ---------------------------------------
 
-app.get('/edit-profile', isLoggedIn, async (req, res) => {
-    const userId = req.session.userId;
-  
+app.get("/edit-profile", isLoggedIn, async (req, res) => {
+  const userId = req.session.userId;
+  if (req.session.userType == "employer") {
     try {
       // Fetch the current profile data from the database
-      const userData = await db.one(`
-        SELECT a.name, a.location, e.budget
-        FROM app_user a
-        INNER JOIN employer e ON a.id = e.user_id
-        WHERE a.id = $1`, [userId]);
-  
+      const userData = await db.one(
+        `
+          SELECT a.name, a.location, e.budget
+          FROM app_user a
+          INNER JOIN employer e ON a.id = e.user_id
+          WHERE a.id = $1`,
+        [userId]
+      );
+
       // Render the Handlebars template with the fetched data
-      res.render('pages/edit-profile', {
+      res.render("pages/edit-profile", {
         user: {
           name: userData.name,
-          location: userData.location
+          location: userData.location,
+          type: req.session.userType,
         },
         employer: {
-          budget: userData.budget
+          budget: userData.budget,
         },
-        email : req.session.email
+        email: req.session.email,
       });
     } catch (error) {
       console.log(error);
-      res.status(500).send('Error fetching profile data');
+      res.status(500).send("Error fetching profile data");
     }
-  });
-  
-
-  app.post('/edit-profile', isLoggedIn, async (req, res) => {
-    const userId = req.session.userId;
-    const { name, location, budget } = req.body;
-  
+  }
+  if (req.session.userType == "freelancer") {
     try {
+      // Fetch the current profile data from the database
+      const userData = await db.one(
+        `
+          SELECT a.name, a.location, f.bio, f.profile_picture
+          FROM app_user a
+          INNER JOIN freelancer f ON a.id = f.user_id
+          WHERE a.id = $1`,
+        [userId]
+      );
+
+      // Render the Handlebars template with the fetched data
+      res.render("pages/edit-profile", {
+        user: {
+          name: userData.name,
+          location: userData.location,
+          type: req.session.userType,
+        },
+        freelancer: {
+          bio: userData.bio,
+          profile_picture: userData.profile_picture,
+        },
+        email: req.session.email,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Error fetching profile data");
+    }
+  }
+});
+
+app.post("/edit-profile", isLoggedIn, async (req, res) => {
+  const userId = req.session.userId;
+  try {
+    const name = req.body.name;
+    const location = req.body.location;
+
+    if (req.session.userType == "employer") {
+      const budget = req.body.budget;
+
       // Validate input
       if (budget !== undefined && (isNaN(budget) || budget < 0)) {
-        return res.status(400).send('Invalid budget value');
+        return res.status(400).send("Invalid budget value");
       }
-      if (name !== undefined && !name.trim()) {
-        return res.status(400).send('Invalid name value');
-      }
-  
-      // Begin transaction to update user and employer details
-      await db.tx(async t => {
-        if (name !== undefined || location !== undefined) {
-          await t.none(
-            `UPDATE app_user
-             SET name = COALESCE($1, name), location = COALESCE($2, location)
-             WHERE id = $3`,
-            [name, location, userId]
-          );
-        }
+      await db.tx(async (t) => {
         if (budget !== undefined) {
           await t.none(
             `UPDATE employer
-             SET budget = $1
-             WHERE user_id = $2`,
+              SET budget = $1
+              WHERE user_id = $2`,
             [budget, userId]
           );
         }
       });
-  
-      res.json({ message: 'Profile updated successfully' });
-    } catch (error) {
-      console.log(error);
-      res.status(500).send('Error updating profile');
     }
-  });
-  
- 
+    if (req.session.userType == "freelancer") {
+      const bio = req.body.bio;
+      const profile_picture = req.body.profile_picture;
+      await db.tx(async (t) => {
+        if (bio !== undefined || profile_picture !== undefined) {
+          await t.none(
+            `UPDATE freelancer
+              SET bio = COALESCE($1, bio), profile_picture = COALESCE($2, profile_picture)
+              WHERE user_id = $3`,
+            [bio, profile_picture, userId]
+          );
+        }
+      });
+    }
+
+    if (name !== undefined || location !== undefined) {
+      await db.none(
+        `UPDATE app_user
+          SET name = COALESCE($1, name), location = COALESCE($2, location)
+          WHERE id = $3`,
+        [name, location, userId]
+      );
+    }
+    res.send(`
+                <script>
+                    alert('Profile updated successfully');
+                    setTimeout(function() {
+                    window.location.href = '/edit-profile';
+                    }, 500);
+                </script>
+        `);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error updating profile");
+  }
+});
 
 // -------------------------------------  SERVER START   ---------------------------------------
 
@@ -320,4 +368,4 @@ app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
 
-module.exports = {app, db};
+module.exports = { app, db };
