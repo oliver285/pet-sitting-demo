@@ -95,19 +95,9 @@ const logoutRoute = require("./src/routes/auth/logout");
 app.use("/logout", logoutRoute);
 
 // -------------------------------------  JOB LISTING   ---------------------------------------
-const {getOpenJobs} = require('./src/queries/getOpenJobs');
 
-app.get("/jobs", isLoggedIn, async (req, res) => {
-  try {
-    const jobs = await getOpenJobs();
-
-    // Render the job board template with the jobs data
-    res.render("pages/job_listing", { jobs, email: req.session.email });
-  } catch (err) {
-    console.error("Error fetching job posts:", err);
-    res.status(500).send("Server error");
-  }
-});
+const jobsRoute = require("./src/routes/jobs/jobs");
+app.use("/jobs", jobsRoute);
 
 // -------------------------------------  PROFILE EDIT   ---------------------------------------
 
