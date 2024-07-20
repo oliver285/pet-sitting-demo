@@ -364,7 +364,7 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
   }
 });
 
-app.post('/edit-profile1', isLoggedIn, async (req, res) => {
+app.post('/edit-profile/add', isLoggedIn, async (req, res) => {
   const { name, type, age, specialNeeds, ownerId } = req.body;
 
   if (!name || !type) {
