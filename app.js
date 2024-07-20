@@ -1,4 +1,4 @@
-const express = require("express");
+const express=express("express");
 const app = express();
 const path = require("path");
 
@@ -307,8 +307,6 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
     const name = req.body.name;
     const location = req.body.location;
 
-    
-
     if (req.session.userType == "employer") {
       const budget = req.body.budget;
 
@@ -364,7 +362,14 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
   }
 });
 
-app.post('/edit-profile/add', isLoggedIn, async (req, res) => {
+
+
+//---------------------------------------------------------NEW ADDS----------------------------------------------
+
+
+
+
+app.post('/edit-profile-pet',async (req, res) => {
   const { name, type, age, specialNeeds, ownerId } = req.body;
 
   if (!name || !type) {
