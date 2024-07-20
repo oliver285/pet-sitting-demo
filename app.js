@@ -307,6 +307,8 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
     const name = req.body.name;
     const location = req.body.location;
 
+    
+
     if (req.session.userType == "employer") {
       const budget = req.body.budget;
 
@@ -361,6 +363,27 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
     res.status(500).send("Error updating profile");
   }
 });
+
+app.post('/edit-profile1', isLoggedIn, async (req, res) => {
+  const { name, type, age, specialNeeds, ownerId } = req.body;
+
+  if (!name || !type) {
+    return res.status(400).send("Name and Pet type are required.");
+  }
+
+  const query = `
+    INSERT INTO PET (owner_id, name, type, age, special_needs)
+    VALUES ($1, $2, $3, $4, $5)
+  `;
+  try {
+    await db.none(query, [ownerId, name, type, age, specialNeeds]);
+    res.redirect('/edit-profile');
+  } catch (error) {
+    console.error('Error adding pet:', error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 
 // -------------------------------------  SERVER START   ---------------------------------------
 
