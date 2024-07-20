@@ -1,4 +1,4 @@
-const express=express("express");
+const express = require("express");
 const app = express();
 const path = require("path");
 
@@ -46,12 +46,13 @@ app.use(
 
 // -------------------------------------  DB CONFIG AND CONNECT   ---------------------------------------
 const dbConfig = {
-  host: process.env.HOST,
-  port: 5432,
-  database: process.env.POSTGRES_DB,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
+  host: process.env.DB_HOST || 'db',
+  port: '5432',
+  database: process.env.DB_NAME || 'users_db',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'password',
 };
+
 const db = pgp(dbConfig);
 
 // db test
@@ -307,6 +308,8 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
     const name = req.body.name;
     const location = req.body.location;
 
+    
+
     if (req.session.userType == "employer") {
       const budget = req.body.budget;
 
@@ -361,6 +364,10 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
     res.status(500).send("Error updating profile");
   }
 });
+
+
+// -------------------------------------  SERVER START   ---------------------------------------
+
 
 
 
