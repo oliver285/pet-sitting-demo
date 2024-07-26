@@ -1,4 +1,13 @@
-app.get("/edit-profile", isLoggedIn, async (req, res) => {
+const db = require('../../config/database');
+const { getEmployerProfile, getFreelancerProfile } = require('../../queries/profileQueries');
+const { updateEmployer, updateFreelancer, updateUser } = require('../../queries/profileUpdate');
+const { isLoggedIn } = require('../../middleware/authStatus');
+const express = require("express");
+const router = express.Router()
+
+
+
+router.get("/", isLoggedIn, async (req, res) => {
   const userId = req.session.userId;
   if (req.session.userType == "employer") {
     try {
@@ -61,7 +70,7 @@ app.get("/edit-profile", isLoggedIn, async (req, res) => {
   }
 });
 
-app.post("/edit-profile", isLoggedIn, async (req, res) => {
+router.post("/", isLoggedIn, async (req, res) => {
   const userId = req.session.userId;
   try {
     const name = req.body.name;
@@ -122,4 +131,8 @@ app.post("/edit-profile", isLoggedIn, async (req, res) => {
     console.log(error);
     res.status(500).send("Error updating profile");
   }
+
+module.exports = router;
+  
 });
+modul
